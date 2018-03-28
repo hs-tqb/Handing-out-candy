@@ -6,8 +6,9 @@
   "private": true,
   "scripts": {
     "dev": "cross-env PORT=3021 backpack dev",
+    "test":"cross-env PORT=3001 backpack dev",
     "build": "nuxt build && backpack build",
-    "start": "cross-env PORT=3001 NODE_ENV=production node build/main.js",
+    "start": "cross-env PORT=3021 NODE_ENV=production node build/main.js",
     "precommit": "npm run lint",
     "lint": "eslint --ext .js,.vue --ignore-path .gitignore ."
   },
