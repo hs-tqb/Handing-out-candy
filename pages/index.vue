@@ -24,8 +24,8 @@
     }
     // .help { display:inline-block; vertical-align:middle; width:20px; height:20px; background:url(~assets/img/icons/help.png) no-repeat center; background-size:100% auto; }
     .website { 
-      .flow(row,wrap); color:@color-text-primary;
-      a { .flex(1); padding:7px 0; white-space:nowrap; text-align:center; }
+      .flow(row,wrap); justify-content:space-around; color:@color-text-primary;
+      a { padding:7px 0; white-space:nowrap; text-align:center; }
     }
     #dialog-result {
       // background:transparent;
@@ -61,11 +61,11 @@
 
 <template>
   <div id="page-home">
-    <a id="logo" href="valp.io" target="_blank"></a>
+    <a id="logo" href="http://valp.io" target="_blank"></a>
     <h1 class="text-center">{{lang.title}}</h1>
     <div class="panel">
       <template v-for="(item,key) in input">
-        <label :for="item.id" :class="item.required?'required':''">
+        <label :for="item.id" :class="item.required?'required':''" :key="`input-${key}`">
           {{lang.input[key].label}}
           <!-- <div v-if="item.help" class="icon help" @click="call(item.help.event)"></div> -->
           <span class="explain" v-if="item.explain">{{lang.input[key].explain}}</span>
@@ -81,6 +81,7 @@
           >
         </div>
       </template>
+      <!-- <div class="foam"></div> -->
       <input type="button" id="confirm" class="btn primary block" :value="lang.confirm" @click="confirm">
       <h3 class="website">
         <a :href="website.official" class="text-left">{{lang.website.official}} {{website.official}}</a>
@@ -156,10 +157,10 @@ export default {
         dialogResult: {
           failure:{
             title:'领取失败',
-            text :'请重新输入兑换码！'
+            text :'兑换码填写错误，请重新输入！'
           },
           success: {
-            title:'领取成功',
+            title:'提交成功',
             text :'我们会在3个工作日内完成发放，倒是可在表单填写的 ETH 地址查询'
           }
         }
