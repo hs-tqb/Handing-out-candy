@@ -46,7 +46,6 @@
           h2 {color:@color-warning; }
           p { text-align:center; }
         }
-
       }
       @btnSize:60px;
       .close { 
@@ -113,6 +112,8 @@
 </template>
 
 <script>
+import axios from '~/plugins/axios'
+const host = '//192.168.1.159:8008';
 export default {
   data () {
     return {
@@ -173,7 +174,8 @@ export default {
         },
         mobile:{
           id:'kdfjliq',
-          regexp:/^\+?[\d- ]+\d+$/,
+          // regexp:/^\+?[\d- ]+\d+$/,
+          regexp:/^1[3-9]\d{9}$/,
           value:'',
           required:true
         },
@@ -228,23 +230,43 @@ export default {
       this[name](value);
     },
     sendSMSCode({key}) {
-      let obj = this.input.vfCode.addition;
-      let btn = this.lang.input.vfCode.addition;
-      let secs = 60, timer = -1;
-      obj.disabled = true;
-      btn.bakText  = btn.text;
-      btn.text = btn.countDownText.replace('#placeholder#', secs);
-      
-      timer = setInterval(()=>{
-        if (--secs === 0 ) {
-          clearInterval(timer);
-          btn.text = btn.bakText;
-          obj.disabled = false;
-        } else {
-          btn.text = btn.countDownText.replace('#placeholder#', secs);
-        }
-      }, 999);
+      // 如果手机号非法，则中断操作
+      let mobile = this.input.mobile;
+      if ( !mobile.regexp.test(mobile.value) ) {
+        return this.$store.commit('showMessageDialog', {
+          type:'failure',
+          text:this.lang.input.mobile.warning
+        });
+      }
 
+      // axios.post(host+'/candy/getCode', {mobile:mobile.value} )
+      axios.get(host+'/candy/getCode', {params:{mobile:mobile.value}} )
+        .then(resp=>{ 
+          resp = resp.data;
+          if ( resp.state !== 1 ) throw resp.message;
+          // 倒计时逻辑
+          let btn = this.lang.input.vfCode.addition;
+          let secs = 60;
+          let timer = -1;
+          
+          this.input.vfCode.addition.disabled = true;
+          btn.bakText  = btn.text;
+          btn.text = btn.countDownText.replace('#placeholder#', secs);
+          
+          timer = setInterval(()=>{
+            if (--secs === 0 ) {
+              clearInterval(timer);
+              btn.text = btn.bakText;
+              this.input.vfCode.addition.disabled = false;
+            } else {
+              btn.text = btn.countDownText.replace('#placeholder#', secs);
+            }
+          }, 1e3);
+
+        })
+        .catch(err=>{
+          this.$store.commit('showMessageDialog', {type:'failure', text:err.toString()});
+        })
     },
     showWalletExplain() {
       this.input.wallet.help.show = true;
@@ -263,8 +285,28 @@ export default {
         }
       }
 
-      this.dialogResult.state = (+(Math.random()*10).toFixed(0))%2? 'success':'failure';
-      this.dialogResult.show  = true;
+
+      // axios.post(host+'/candy/getCandy', {
+      axios.get(host+'/candy/getCandy', {params:{
+          mobile:input.mobile.value,
+          email:input.email.value,
+          convertCode:input.key.value,
+          ethAccount:input.wallet.value,
+          customerName:input.name.value,
+          verifyCode:input.vfCode.value
+        // }).then(resp=>{
+        }}).then(resp=>{
+          resp = resp.data;
+          if ( resp.state !== 1 ) throw resp.message;
+          this.dialogResult.state = resp.data? 'success': 'failure';
+          this.dialogResult.show  = true;
+        })
+        .catch(err=>{
+          this.$store.commit('showMessageDialog', {type:'failure', text:err.toString()});
+        })
+
+      // this.dialogResult.state = (+(Math.random()*10).toFixed(0))%2? 'success':'failure';
+      // this.dialogResult.show  = true;
 
     }
   }
