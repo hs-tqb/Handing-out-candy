@@ -4,6 +4,7 @@
   
   @input-height:25px;
   #page-home {
+    min-width:260px;
     padding-top:1px;
     font-size:12px;
     #logo { .block; margin:30px auto 0 auto; width:40vw; height:30vw; background:url(~assets/img/logo.png) no-repeat center; background-size:100% auto; }
@@ -17,8 +18,11 @@
       }
       .input-wrapper {
         .flow();
-        input { .flex(1); height:@input-height; .border(bottom); }
-        input[type=button] { flex:none; margin:(@input-height - 35px) 0 0 5px; width:120px; .radius(4px); font-size:12px; }
+        input { .flex(1); min-width:0; height:@input-height; .border(bottom); }
+        input[type=button] { 
+          flex:none; margin:(@input-height - 35px) 0 0 5px; width:120px; .radius(4px); font-size:12px; 
+          &:disabled { opacity:.5; }
+        }
       }
       #confirm { margin:20px 0; .radius(4px); }
     }
@@ -63,24 +67,25 @@
     <a id="logo" href="http://valp.io" target="_blank"></a>
     <h1 class="text-center">{{lang.title}}</h1>
     <div class="panel">
-      <template v-for="(item,key) in input">
-        <label :for="item.id" :class="item.required?'required':''" :key="`input-${key}`">
-          {{lang.input[key].label}}
-          <!-- <div v-if="item.help" class="icon help" @click="call(item.help.event)"></div> -->
-          <span class="explain" v-if="item.explain">{{lang.input[key].explain}}</span>
-        </label>
-        <div class="input-wrapper">
-          <input type="text" :id="item.id" v-model.trim="item.value">
-          <input 
-            type="button" 
-            class="btn transparent"
-            :value="lang.input[key].addition.text" 
-            :disabled="input.vfCode.addition.disabled"
-            v-if="item.addition" @click="call(item.addition.event, {key})"
-          >
-        </div>
-      </template>
-      <!-- <div class="foam"></div> -->
+      <ul class="inp-list">
+        <li v-for="(item,key) in input" :key="`input-${key}`">
+          <label :for="item.id" :class="item.required?'required':''" >
+            {{lang.input[key].label}}
+            <!-- <div v-if="item.help" class="icon help" @click="call(item.help.event)"></div> -->
+            <span class="explain" v-if="item.explain">{{lang.input[key].explain}}</span>
+          </label>
+          <div class="input-wrapper">
+            <input type="text" :id="item.id" v-model.trim="item.value">
+            <input 
+              type="button" 
+              class="btn transparent"
+              :value="lang.input[key].addition.text" 
+              :disabled="input.vfCode.addition.disabled"
+              v-if="item.addition" @click="call(item.addition.event, {key})"
+            >
+          </div>
+        </li>
+      </ul>
       <input type="button" id="confirm" class="btn primary block" :value="lang.confirm" @click="confirm">
       <h3 class="website">
         <a :href="website.official" class="text-left">{{lang.website.official}} {{website.official}}</a>
@@ -113,7 +118,10 @@
 
 <script>
 import axios from '~/plugins/axios'
-const host = '//192.168.1.159:8008';
+const host = process.env.NODE_ENV==='production'? 
+  '//bot.valp.io':
+  '//119.28.60.230:8280';
+
 export default {
   data () {
     return {
@@ -190,6 +198,7 @@ export default {
         },
         email:{
           id:'xkvjslf',
+          regexp:/^[\w][\w-.]+[\w]\@\w\.[a-zA-Z]$/,
           value:'',
           required:false,
         },
@@ -239,8 +248,8 @@ export default {
         });
       }
 
-      // axios.post(host+'/candy/getCode', {mobile:mobile.value} )
-      axios.get(host+'/candy/getCode', {params:{mobile:mobile.value}} )
+      axios.post(host+'/candy/getCode', {mobile:mobile.value} )
+      // axios.get(host+'/candy/getCode', {params:{mobile:mobile.value}} )
         .then(resp=>{ 
           resp = resp.data;
           if ( resp.state !== 1 ) throw resp.message;
@@ -266,7 +275,7 @@ export default {
         })
         .catch(err=>{
           this.$store.commit('showMessageDialog', {type:'failure', text:err.toString()});
-        })
+        });
     },
     showWalletExplain() {
       this.input.wallet.help.show = true;
@@ -286,16 +295,16 @@ export default {
       }
 
 
-      // axios.post(host+'/candy/getCandy', {
-      axios.get(host+'/candy/getCandy', {params:{
+      axios.post(host+'/candy/getCandy', {
+      // axios.get(host+'/candy/getCandy', {params:{
           mobile:input.mobile.value,
           email:input.email.value,
           convertCode:input.key.value,
           ethAccount:input.wallet.value,
           customerName:input.name.value,
           verifyCode:input.vfCode.value
-        // }).then(resp=>{
-        }}).then(resp=>{
+        }).then(resp=>{
+        // }}).then(resp=>{
           resp = resp.data;
           if ( resp.state !== 1 ) throw resp.message;
           this.dialogResult.state = resp.data? 'success': 'failure';
@@ -303,11 +312,7 @@ export default {
         })
         .catch(err=>{
           this.$store.commit('showMessageDialog', {type:'failure', text:err.toString()});
-        })
-
-      // this.dialogResult.state = (+(Math.random()*10).toFixed(0))%2? 'success':'failure';
-      // this.dialogResult.show  = true;
-
+        });
     }
   }
 }
