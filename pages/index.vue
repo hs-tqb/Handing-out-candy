@@ -96,7 +96,7 @@
 
     <div id="dialog-result" class="dialog-container" :class="dialogResult.show?'show':''">
       <div class="outer-wrapper">
-        <div class="inner-wrapper" :class="dialogResult.state">
+        <div class="inner-wrapper" :class="dialogResult.state" v-if="dialogResult.state">
           <a href="javascript:void(0)" class="close" @click="dialogResult.show=false"></a>
           <img src="~/assets/img/icons/success.png" width="60" height="60" v-if="dialogResult.state==='success'">
           <img src="~/assets/img/icons/failure.png" width="60" height="60" v-else>
@@ -121,6 +121,7 @@ import axios from '~/plugins/axios'
 const host = process.env.NODE_ENV==='production'? 
   '//bot.valp.io':
   '//119.28.60.230:8280';
+  // '//192.168.1.159:8008';
 
 export default {
   data () {
@@ -225,7 +226,7 @@ export default {
       },
       dialogResult: {
         show:false,
-        state:'success',
+        state:'',
       }
     }
   },
@@ -307,7 +308,7 @@ export default {
         // }}).then(resp=>{
           resp = resp.data;
           if ( resp.state !== 1 ) throw resp.message;
-          this.dialogResult.state = resp.data? 'success': 'failure';
+          this.dialogResult.state = resp.data==='success'? 'success': 'failure';
           this.dialogResult.show  = true;
         })
         .catch(err=>{
