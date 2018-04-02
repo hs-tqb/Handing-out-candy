@@ -146,7 +146,8 @@ export default {
             warning:'验证码不能为空'
           },
           email:{
-            label:'邮箱'
+            label:'邮箱',
+            warning:'无效的邮箱'
           },
           wallet:{
             label:'ETH 钱包地址',
@@ -185,7 +186,7 @@ export default {
           id:'kdfjliq',
           // regexp:/^\+?[\d- ]+\d+$/,
           regexp:/^1[3-9]\d{9}$/,
-          value:'',
+          value:'13243708203',
           required:true
         },
         vfCode:{
@@ -199,7 +200,7 @@ export default {
         },
         email:{
           id:'xkvjslf',
-          regexp:/^[\w][\w-.]+[\w]\@\w\.[a-zA-Z]$/,
+          regexp:/^[a-zA-Z0-9\u4e00-\u9fa5]+([\.\_\-]?[a-zA-Z0-9\u4e00-\u9fa5])+@([a-zA-Z0-9]+[\.\-])+[a-zA-Z0-9]+$/,
           value:'',
           required:false,
         },
@@ -286,8 +287,21 @@ export default {
       let temp      = null;
       for ( let p in input ) {
         temp = input[p];
-        if ( !temp.required ) continue;
-        if ( !temp.value || (temp.regexp&&!temp.regexp.test(temp.value)) ) {
+        // if ( !temp.required ) {
+        //   if ( temp.value && temp.regexp && !temp.regexp.test(temp.value) ) {
+        //     return this.$store.commit('showMessageDialog', {
+        //       type:'failure', 
+        //       text:this.lang.input[p].warning
+        //     });
+        //   } else {
+        //     continue;
+        //   }
+        // }
+        if ( 
+          temp.required? 
+          (!temp.value || (temp.regexp&&!temp.regexp.test(temp.value))):
+          (temp.value && temp.regexp && !temp.regexp.test(temp.value))
+        ) {
           return this.$store.commit('showMessageDialog', {
             type:'failure', 
             text:this.lang.input[p].warning
