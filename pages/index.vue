@@ -308,7 +308,7 @@ export default {
         // }}).then(resp=>{
           resp = resp.data;
           if ( resp.state !== 1 ) throw resp.message;
-          this.dialogResult.state = resp.data==='success'? 'success': 'failure';
+          this.dialogResult.state = resp.data.result==='success'? 'success': 'failure';
           this.dialogResult.show  = true;
         })
         .catch(err=>{
